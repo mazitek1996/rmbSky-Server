@@ -3,11 +3,8 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Admin = require("../../../model/admin");
-const {
-  authenticateAdmin,
-} = require("../../../middleware/authentication/admin-auth");
 
-router.post("/", authenticateAdmin, async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
     let admin;
     // Check if the request has an email

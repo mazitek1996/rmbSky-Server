@@ -2,7 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
-const User = require("../../../models/admin");
+const User = require("../../../model/admin");
 const multer = require("multer");
 const path = require("path");
 const AWS = require("aws-sdk");
