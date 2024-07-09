@@ -57,16 +57,29 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Route to get all countries
+// // Route to get all countries
+// router.get("/", async (req, res) => {
+//   try {
+//     const countries = await Country.find();
+//     res.status(200).json(countries);
+//   } catch (error) {
+//     console.error("Error fetching countries:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// Route to get all countries in alphabetical order
 router.get("/", async (req, res) => {
   try {
-    const countries = await Country.find();
+    const countries = await Country.find().sort({ name: 1 }); // Sorting countries by name in ascending order
     res.status(200).json(countries);
   } catch (error) {
     console.error("Error fetching countries:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
 
 // Route to get details of a specific country by ID
 router.get("/:countryId", async (req, res) => {

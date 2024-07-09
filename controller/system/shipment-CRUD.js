@@ -7,11 +7,42 @@ const { body, validationResult } = require('express-validator');
 const { authenticateAdmin } = require("../../middleware/authentication/admin-auth");
 const TrackingHistory = require("../../model/trackingHistory"); // Ensure the path is correctly pointed to your TrackingHistory model
 
+
+
+
+
 // Enhanced route to create a new shipment with comprehensive validation
 router.post("/", [
+    // Validation rules
+    body('sender.name').notEmpty().withMessage('Sender name is required'),
+    body('sender.phone').notEmpty().withMessage('Sender phone is required'),
+    body('sender.address').notEmpty().withMessage('Sender address is required'),
+    body('sender.country').notEmpty().withMessage('Sender country is required'),
+    body('sender.email').isEmail().withMessage('Sender email is invalid'),
     body('receiver.name').notEmpty().withMessage('Receiver name is required'),
-    body('shipmentDetails.type').isIn(['Air', 'Freight', 'Ship', 'Van']).withMessage('Invalid type specified')
-], authenticateAdmin, async (req, res) => {
+    body('receiver.phone').notEmpty().withMessage('Receiver phone is required'),
+    body('receiver.address').notEmpty().withMessage('Receiver address is required'),
+    body('receiver.streetAddress').notEmpty().withMessage('Receiver street address is required'),
+    body('receiver.city').notEmpty().withMessage('Receiver city is required'),
+    body('receiver.state').notEmpty().withMessage('Receiver state is required'),
+    body('receiver.country').notEmpty().withMessage('Receiver country is required'),
+    body('shipmentDetails.type').notEmpty().withMessage('Shipment type is required'),
+    body('shipmentDetails.weight').isNumeric().withMessage('Weight must be a number'),
+    body('shipmentDetails.courier').notEmpty().withMessage('Courier is required'),
+    body('shipmentDetails.packages').isNumeric().withMessage('Packages must be a number'),
+    body('shipmentDetails.mode').notEmpty().withMessage('Mode is required'),
+    body('shipmentDetails.product').notEmpty().withMessage('Product is required'),
+    body('shipmentDetails.quantity').isNumeric().withMessage('Quantity must be a number'),
+    body('shipmentDetails.paymentMode').notEmpty().withMessage('Payment mode is required'),
+    body('shipmentDetails.totalFreight').isNumeric().withMessage('Total freight must be a number'),
+    body('shipmentDetails.carrier').notEmpty().withMessage('Carrier is required'),
+    body('shipmentDetails.departureTime').isISO8601().withMessage('Departure time is invalid'),
+    body('shipmentDetails.origin').notEmpty().withMessage('Origin is required'),
+    body('shipmentDetails.destination').notEmpty().withMessage('Destination is required'),
+    body('shipmentDetails.pickupDate').isISO8601().withMessage('Pickup date is invalid'),
+    body('shipmentDetails.expectedDeliveryDate').isISO8601().withMessage('Expected delivery date is invalid'),
+    body('shipmentDetails.status').notEmpty().withMessage('Status is required')
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -26,12 +57,46 @@ router.post("/", [
 
         const newShipment = new Shipment(req.body);
         await newShipment.save();
-        res.status(201).json({ data: newShipment });
+        res.status(201).json({ message: "Shipment created successfully", data: newShipment });
     } catch (error) {
         console.error("Error creating shipment:", error);
         res.status(500).json({ error: "Internal server error", message: error.message });
     }
 });
+
+module.exports = router;
+
+
+
+
+
+
+
+
+// Enhanced route to create a new shipment with comprehensive validation
+// router.post("/", [
+   
+// ],  async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//         return res.status(400).json({ errors: errors.array() });
+//     }
+
+//     try {
+//         // Check for existing tracking number
+//         const existingShipment = await Shipment.findOne({ trackingNumber: req.body.trackingNumber });
+//         if (existingShipment) {
+//             return res.status(409).json({ error: "A shipment with this tracking number already exists" });
+//         }
+
+//         const newShipment = new Shipment(req.body);
+//         await newShipment.save();
+//         res.status(201).json({ data: newShipment });
+//     } catch (error) {
+//         console.error("Error creating shipment:", error);
+//         res.status(500).json({ error: "Internal server error", message: error.message });
+//     }
+// });
 
 
 // // Route to get all shipments
@@ -60,6 +125,30 @@ router.post("/", [
 // });
 
 
+// // Route to get all shipments
+// router.get("/", async (req, res) => {
+//   try {
+//       const shipments = await Shipment.find()
+//           .populate('sender.country')
+//           .populate('receiver.country')
+//           .populate('shipmentDetails.origin')
+//           .populate('shipmentDetails.destination')
+//           .populate({
+//               path: 'trackingHistory',
+//               populate: {
+//                   path: 'location.country',
+//                   model: 'Country'
+//               }
+//           });
+          
+//       res.status(200).json(shipments);
+//   } catch (error) {
+//       console.error("Error fetching shipments:", error);
+//       res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+
 // Route to get all shipments
 router.get("/", async (req, res) => {
   try {
@@ -75,12 +164,16 @@ router.get("/", async (req, res) => {
                   model: 'Country'
               }
           });
+
+      console.log(shipments); // Add this line to log shipments
+
       res.status(200).json(shipments);
   } catch (error) {
       console.error("Error fetching shipments:", error);
       res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // Route to get a specific shipment by ID
 router.get("/:shipmentId", async (req, res) => {
